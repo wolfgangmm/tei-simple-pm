@@ -21,6 +21,11 @@ else if ($exist:path eq "/") then
         <redirect url="index.html"/>
     </dispatch>
     
+else if (contains($exist:path, "bower_components")) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/bower_components/{substring-after($exist:path, 'bower_components/')}"/>
+    </dispatch>
+    
 else if (matches($exist:path, "/(" || string-join($data-collections, "|") || ")/.*[^/]+\.xml$")) then
     let $view := request:get-parameter("view", ())
     return
