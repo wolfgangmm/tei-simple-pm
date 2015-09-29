@@ -2,6 +2,8 @@ $(document).ready(function() {
     var historySupport = !!(window.history && window.history.pushState);
     var appRoot = $("html").data("app");
     
+    var showRegularized = false;
+    
     function resize() {
         var wh = ($(window).height()) / 2;
         $(".page-nav").css("top", wh);
@@ -61,13 +63,7 @@ $(document).ready(function() {
             trigger: "hover"
         });
         $(".content .sourcecode").highlight();
-        $(".content .alternate").each(function() {
-            $(this).popover({
-                content: $(this).find(".altcontent").html(),
-                trigger: "hover",
-                html: true
-            });
-        });
+        applyOptions();
     }
     
     function showContent(container, animIn, animOut) {
@@ -75,6 +71,16 @@ $(document).ready(function() {
         $("#content-container").addClass("animated " + animIn).one("webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend", function() {
             $(this).removeClass("animated " + animIn);
         });
+    }
+    
+    function applyOptions() {
+        if (showRegularized) {
+            $(".content .alternate .orig").hide();
+            $(".content .alternate .altcontent").show();
+        } else {
+            $(".content .alternate .altcontent").hide();
+            $(".content .alternate .orig").show();
+        }
     }
     
     function isMobile() {
@@ -103,6 +109,18 @@ $(document).ready(function() {
         ev.preventDefault();
         var size = getFontSize();
         $("#content-inner").css("font-size", (size - 1) + "px");
+    });
+    
+    $("#toggle-view-reg").click(function(ev) {
+        ev.preventDefault();
+        if (showRegularized) {
+            $(this).text("Show regularized forms");
+            showRegularized = false;
+        } else {
+            $(this).text("Show original forms");
+            showRegularized = true;
+        }
+        applyOptions();
     });
     
     $(window).on("popstate", function(ev) {
