@@ -29,29 +29,33 @@ declare variable $local:CONFIG :=
         
         <!-- Base URL for resolving relative URLs -->
         <base>./</base>
-        
-        <!-- Font Base URL for resolving relative font URLs -->
-        <font-base>{substring-before(request:get-url(), "/modules")}/resources/fonts/</font-base>
+
         <renderers>
             <renderer mime="application/pdf">
+                <!-- load all fonts from the configured directory -->
+                <!-- directory recursive="true">{$config:tei-simple-fonts-dir}</directory-->
+                
+                <!-- automatically detect operating system installed fonts -->
+                <!-- auto-detect/-->
+                
                 <fonts>
                     <font kerning="yes"
-                        embed-url="Junicode.ttf"
+                        embed-url="file:{$config:tei-simple-fonts-dir}/Junicode.ttf"
                         encoding-mode="single-byte">
                         <font-triplet name="Junicode" style="normal" weight="normal"/>
                     </font>
                     <font kerning="yes"
-                        embed-url="Junicode-Bold.ttf"
+                        embed-url="file:{$config:tei-simple-fonts-dir}/Junicode-Bold.ttf"
                         encoding-mode="single-byte">
                         <font-triplet name="Junicode" style="normal" weight="700"/>
                     </font>
                     <font kerning="yes"
-                        embed-url="Junicode-Italic.ttf"
+                        embed-url="file:{$config:tei-simple-fonts-dir}/Junicode-Italic.ttf"
                         encoding-mode="single-byte">
                         <font-triplet name="Junicode" style="italic" weight="normal"/>
                     </font>
                     <font kerning="yes"
-                        embed-url="Junicode-BoldItalic.ttf"
+                        embed-url="file:{$config:tei-simple-fonts-dir}/Junicode-BoldItalic.ttf"
                         encoding-mode="single-byte">
                         <font-triplet name="Junicode" style="italic" weight="700"/>
                     </font>
