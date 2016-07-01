@@ -6,18 +6,25 @@
  :)
 xquery version "3.0";
 
+(: declare namespace exist="http:// :)
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 
 import module namespace config="http://www.tei-c.org/tei-simple/config" at "config.xqm";
 import module namespace odd="http://www.tei-c.org/tei-simple/odd2odd" at "../content/odd2odd.xql";
 import module namespace pmu="http://www.tei-c.org/tei-simple/xquery/util" at "../content/util.xql";
 import module namespace process="http://exist-db.org/xquery/process" at "java:org.exist.xquery.modules.process.ProcessModule";
+import module namespace request="http://exist-db.org/xquery/request";
+import module namespace response="http://exist-db.org/xquery/response";
+import module namespace xslfo="http://exist-db.org/xquery/xslfo";
+
 
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 declare option output:method "xml";
 declare option output:html-version "5.0";
 declare option output:media-type "text/xml";
+
+declare variable $local:font-base := "exist://localhost/db/apps/tei-simple/resources/fonts";
 
 declare variable $local:CONFIG := 
     <fop version="1.0">
@@ -30,28 +37,28 @@ declare variable $local:CONFIG :=
         <!-- Base URL for resolving relative URLs -->
         <base>./</base>
         
-        <!-- Font Base URL for resolving relative font URLs -->
-        <font-base>{substring-before(request:get-url(), "/modules")}/resources/fonts/</font-base>
+        <use-cache>false</use-cache> <!-- NOTE(AR): needs to be disabled until FOP can cache fonts from sources other than the FileSystem, submitted patch to Apache, see: https://issues.apache.org/jira/browse/FOP-2601 -->
+
         <renderers>
             <renderer mime="application/pdf">
                 <fonts>
                     <font kerning="yes"
-                        embed-url="Junicode.ttf"
+                        embed-url="{$local:font-base}/Junicode.ttf"
                         encoding-mode="single-byte">
                         <font-triplet name="Junicode" style="normal" weight="normal"/>
                     </font>
                     <font kerning="yes"
-                        embed-url="Junicode-Bold.ttf"
+                        embed-url="{$local:font-base}/Junicode-Bold.ttf"
                         encoding-mode="single-byte">
                         <font-triplet name="Junicode" style="normal" weight="700"/>
                     </font>
                     <font kerning="yes"
-                        embed-url="Junicode-Italic.ttf"
+                        embed-url="{$local:font-base}/Junicode-Italic.ttf"
                         encoding-mode="single-byte">
                         <font-triplet name="Junicode" style="italic" weight="normal"/>
                     </font>
                     <font kerning="yes"
-                        embed-url="Junicode-BoldItalic.ttf"
+                        embed-url="{$local:font-base}/Junicode-BoldItalic.ttf"
                         encoding-mode="single-byte">
                         <font-triplet name="Junicode" style="italic" weight="700"/>
                     </font>
