@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <meta xmlns="http://exist-db.org/xquery/repo">
-    <description>TEI Processing Model Toolbox</description>
+    <description>TEI Processing Model Toolbox (superseded by TEI Publisher)</description>
     <author>Wolfgang Meier</author>
     <website>http://showcases.exist-db.org/exist/apps/tei-pm</website>
     <status>stable</status>
@@ -11,4 +11,12 @@
     <prepare>pre-install.xql</prepare>
     <finish>post-install.xql</finish>
     <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="simple" user="tei" group="tei" mode="rwxrwxr-x"/>
+    <changelog>
+        <change version="1.1.2">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>NOTE: TEI Processing Model Toolbox has been superseded by TEI Publisher</li>
+                <li>This is a minor maintenance release to allow applications to migrate to TEI Publisher</li>
+            </ul>
+        </change>
+    </changelog>
 </meta>
