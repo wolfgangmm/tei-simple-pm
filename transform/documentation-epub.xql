@@ -29,7 +29,7 @@ import module namespace ext-html="http://www.tei-c.org/tei-simple/xquery/ext-htm
 declare function model:transform($options as map(*), $input as node()*) {
         
     let $config :=
-        map:new(($options,
+        map:merge(($options,
             map {
                 "output": ["epub","web"],
                 "odd": "/db/apps/tei-simple/odd/compiled/documentation.odd",

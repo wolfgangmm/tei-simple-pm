@@ -83,7 +83,7 @@ function app:browse($node as node(), $model as map(*), $start as xs:int, $per-pa
         templates:process($node/*[@class="empty"], $model)
     else
         subsequence($model?all, $start, $per-page) !
-            templates:process($node/*[not(@class="empty")], map:new(($model, map { "work": . })))
+            templates:process($node/*[not(@class="empty")], map:merge(($model, map { "work": . })))
 };
 
 declare
