@@ -39,12 +39,12 @@ module namespace css="http://www.tei-c.org/tei-simple/xquery/css";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 declare function css:parse-css($css as xs:string) {
-    map:new(
+    map:merge(
         let $analyzed := analyze-string($css, "(.*?)\s*\{\s*([^\}]*?)\s*\}", "m")
         for $match in $analyzed/fn:match
         let $selectorString := $match/fn:group[@nr = "1"]/string()
         let $selectors := tokenize($selectorString, "\s*,\s*")
-        let $styles := map:new(
+        let $styles := map:merge(
             for $match in analyze-string($match/fn:group[@nr = "2"], "\s*(.*?)\s*\:\s*['&quot;]?(.*?)['&quot;]?(?:\;|$)")/fn:match
             return
                 map:entry($match/fn:group[1]/string(), $match/fn:group[2]/string())
@@ -102,7 +102,7 @@ declare function css:rendition-styles($config as map(*), $node as node()*) as ma
     let $renditions := $node//@rendition[starts-with(., "#")]
     return
         if ($renditions) then
-            map:new(
+            map:merge(
                 let $doc := ($config?parameters?root, root($node))[1]
                 for $renditionDef in $renditions
                 for $rendition in tokenize($renditionDef, "\s+")
@@ -119,7 +119,7 @@ declare function css:rendition-styles-html($config as map(*), $node as node()*) 
     let $styles := css:rendition-styles($config, $node)
     return
         if (exists($styles)) then
-            map:for-each-entry($styles, function($key, $value) {
+            map:for-each($styles, function($key, $value) {
                 "." || $key || " {&#10;" ||
                 "   " || $value || "&#10;" ||
                 "}&#10;&#10;"

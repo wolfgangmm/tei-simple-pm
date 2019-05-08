@@ -37,7 +37,7 @@ declare function pmf:init($config as map(*), $node as node()*) {
     let $renditionStyles := string-join(css:rendition-styles-html($config, $node))
     let $styles := if ($renditionStyles) then css:parse-css($renditionStyles) else map {}
     return
-        map:new(($config, map:entry("rendition-styles", $styles)))
+        map:merge(($config, map:entry("rendition-styles", $styles)))
 };
 
 declare function pmf:paragraph($config as map(*), $node as element(), $class as xs:string+, $content) {
@@ -61,7 +61,7 @@ declare function pmf:heading($config as map(*), $node as element(), $class as xs
         switch ($level)
             case 1 return
                 let $heading := normalize-space(pmf:get-content($config, $node, $class, $content))
-                let $configNoFn := map:new(($config, map { "skip-footnotes": true() }))
+                let $configNoFn := map:merge(($config, map { "skip-footnotes": true() }))
                 let $headingNoFn := pmf:get-content($configNoFn, $node, $class, $content)
                 return
                     "\" || $headType || "{" || $heading || "}\markboth{" || $headingNoFn || "}{" || $headingNoFn || "}&#10;&#10;"
@@ -368,11 +368,11 @@ declare %private function pmf:macros($config as map(*)) as map(*) {
             else
                 ()
     return
-        map:new(($config, map { "cssStyles": $config?styles, "styles": map:new($newStyles)}))
+        map:merge(($config, map { "cssStyles": $config?styles, "styles": map:merge($newStyles)}))
 };
 
 declare %private function pmf:define-styles($config as map(*), $classes as xs:string+, $content as item()*) {
-    let $styles := map:new(for $class in $classes return $config?styles($class))
+    let $styles := map:merge(for $class in $classes return $config?styles($class))
     let $text := string-join($content)
     return
         if (exists($styles)) then
@@ -517,15 +517,15 @@ declare %private function pmf:style($names as xs:string*, $styles as map(*), $te
 declare function pmf:load-styles($config as map(*), $root as document-node()) {
     let $css := css:generate-css($root)
     let $styles := css:parse-css($css)
-    let $styles := map:new(($config?rendition-styles, $styles))
-    let $config := pmf:macros(map:new(($config, map { "styles": $styles })))
+    let $styles := map:merge(($config?rendition-styles, $styles))
+    let $config := pmf:macros(map:merge(($config, map { "styles": $styles })))
     let $latexCode := (
         $pmf:MACROS,
         "% Styles&#10;",
-        map:for-each-entry($config?styles, function($class, $code) {
+        map:for-each($config?styles, function($class, $code) {
             $code
         })
     )
     return
-        map:new(($config, map {"latex-styles": $latexCode}))
+        map:merge(($config, map {"latex-styles": $latexCode}))
 };

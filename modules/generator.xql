@@ -85,6 +85,20 @@ declare function deploy:xconf($collection as xs:string, $odd as xs:string, $user
     )
 };
 
+(: Handle difference between 4.x.x and 5.x.x releases of eXist :)
+declare variable $deploy:copy-resource :=
+    let $fnNew := function-lookup(xs:QName("xmldb:copy-resource"), 4)
+    return
+        if (exists($fnNew)) then
+            $fnNew
+        else
+            let $fnOld := function-lookup(xs:QName("xmldb:copy"), 3)
+            return
+                function($sourceCol, $sourceName, $targetCol, $targetName) {
+                    $fnOld($sourceCol, $targetCol, $sourceName)
+                };
+
+
 declare function deploy:init-simple($collection as xs:string?, $userData as xs:string*, $permissions as xs:string?) {
     let $target := $collection || "/resources/odd"
     let $odd := request:get-parameter("odd", "teisimple.odd")
@@ -93,7 +107,7 @@ declare function deploy:init-simple($collection as xs:string?, $userData as xs:s
         deploy:xconf($collection, $odd, $userData, $permissions),
         for $file in ("elementsummary.xml", "headerelements.xml", "headeronly.xml", "simpleelements.xml", "teisimple.odd", $odd, "configuration.xml")
         return (
-            xmldb:copy($config:odd-root, $target, $file),
+            $deploy:copy-resource($config:odd-root, $file, $target, $file),
             if (exists($userData)) then
                 let $stored := xs:anyURI($target || "/" || $file)
                 return (
@@ -105,10 +119,10 @@ declare function deploy:init-simple($collection as xs:string?, $userData as xs:s
                 ()
         ),
         deploy:mkcol($target || "/compiled", $userData, $permissions),
-        (: xmldb:copy($config:compiled-odd-root, $target || "/compiled", "teisimple.odd"), :)
+        (: $deploy:copy-resource($config:compiled-odd-root, "teisimple.odd", $target || "/compiled", "teisimple.odd"), :)
         deploy:mkcol($collection || "/data", $userData, $permissions),
         deploy:mkcol($collection || "/transform", $userData, $permissions),
-        xmldb:copy($config:output-root, $collection || "/transform", "teisimple.fo.css"),
+        $deploy:copy-resource($config:output-root, "teisimple.fo.css", $collection || "/transform", "teisimple.fo.css"),
         deploy:chmod-scripts($collection)
     )
 };
@@ -227,7 +241,7 @@ declare function deploy:create-collection($collection as xs:string, $userData as
 };
 
 declare function deploy:check-group($group as xs:string) {
-    if (xmldb:group-exists($group)) then
+    if (sm:group-exists($group)) then
         ()
     else
         sm:create-group($group)
@@ -235,19 +249,19 @@ declare function deploy:check-group($group as xs:string) {
 
 declare function deploy:check-user($repoConf as element()) as xs:string+ {
     let $perms := $repoConf/repo:permissions
-    let $user := if ($perms/@user) then $perms/@user/string() else xmldb:get-current-user()
-    let $group := if ($perms/@group) then $perms/@group/string() else xmldb:get-user-groups($user)[1]
+    let $user := if ($perms/@user) then $perms/@user/string() else sm:id()/sm:id/sm:real/sm:username/string()
+    let $group := if ($perms/@group) then $perms/@group/string() else sm:get-user-groups($user)[1]
     let $create :=
-        if (xmldb:exists-user($user)) then
-            if (index-of(xmldb:get-user-groups($user), $group)) then
+        if (sm:user-exists($user)) then
+            if (index-of(sm:get-user-groups($user), $group)) then
                 ()
             else (
                 deploy:check-group($group),
-                xmldb:add-user-to-group($user, $group)
+                sm:add-group-member($user, $group)
             )
         else (
             deploy:check-group($group),
-            xmldb:create-user($user, $perms/@password, $group, ())
+            sm:create-account($user, $perms/@password, $group, ())
         )
     return
         ($user, $group)
@@ -258,7 +272,7 @@ declare function deploy:target-permissions($repoConf as element()) as xs:string 
     return
         if ($permissions) then
             if ($permissions castable as xs:int) then
-                xmldb:permissions-to-string(util:base-to-integer(xs:int($permissions), 8))
+                sm:octal-to-mode(util:base-to-integer(xs:int($permissions), 8))
             else
                 $permissions
         else
@@ -276,7 +290,7 @@ declare function deploy:copy-templates($target as xs:string, $source as xs:strin
         for $resource in xmldb:get-child-resources($source)
         let $targetPath := xs:anyURI(concat($target, "/", $resource))
         return (
-            xmldb:copy($source, $target, $resource),
+            $deploy:copy-resource($source, $resource, $target, $resource),
             let $mime := xmldb:get-mime-type($targetPath)
             let $perms :=
                 if ($mime eq "application/xquery") then
